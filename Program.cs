@@ -44,16 +44,15 @@ namespace Update_Tag
                     : args[2]
                 : args.SecondOrDefault();
             
-            var place = args[0] switch
+            return args[0] switch
             {
-                var x when x == "next" || x == "n" => Place.Version,
-                var x when x == "nextPatch" || x == "np" => Place.Patch,
-                var x when x == "nextMinor" || x == "nx" => Place.Minor,
-                var x when x == "nextMajor" || x == "nX" => Place.Major,
+                var x when x == "next" || x == "n" => new NextCommand(label, Place.Version, dryRun),
+                var x when x == "nextPatch" || x == "np" => new NextCommand(label, Place.Patch, dryRun),
+                var x when x == "nextMinor" || x == "nx" => new NextCommand(label, Place.Minor, dryRun),
+                var x when x == "nextMajor" || x == "nX" => new NextCommand(label, Place.Major, dryRun),
+                var x when x == "listLatest" || x == "l" => new ListLatestCommand(),
                 _ => throw new Exception("Unknown command: " + args[0])
             };
-
-            return new NextCommand(label, place, dryRun);
         }
 
         private static void WriteUsage()
@@ -65,6 +64,7 @@ next (n): creates a new tag by incrementing the version number
 nextPatch (np): creates a new tag by incrementing the patch number
 nextMinor (nx): creates a new tag by incrementing the minor number
 nextMajor (nX): creates a new tag by incrementing the major number
+listLatest (l): lists latest tag versions in each category, label and dry-run gets ignored
 
 label: the optional label to increment
 

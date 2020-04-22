@@ -65,6 +65,11 @@ namespace Update_Tag
             if (!string.IsNullOrEmpty(response))
                 Console.WriteLine(response);
         }
+
+        public string GetTagInfo(string tag)
+        {
+            return ExecuteCommand("git", $"log -1 {tag} --format=\"(%s, %ar)\"");
+        }
         
         private static List<Tag> Parse(string tagsResponse)
         {
