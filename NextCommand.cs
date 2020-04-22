@@ -43,7 +43,8 @@ namespace Update_Tag
                 : latestTag.Increment(_place);
 
             git.NewTag(newTag.ToString());
-            git.PushAll();
+            git.Push();
+            git.PushTag(newTag.ToString());
         }
 
         private Tag GetNewTag()

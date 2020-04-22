@@ -40,14 +40,27 @@ namespace Update_Tag
                 Console.WriteLine(response);
         }
         
-        public void PushAll()
+        public void Push()
         {
-            Console.WriteLine("git push --all");
+            Console.WriteLine("git push");
             
             if (_dryRun)
                 return;
             
-            var response = ExecuteCommand("git", "push --all");
+            var response = ExecuteCommand("git", "push");
+            
+            if (!string.IsNullOrEmpty(response))
+                Console.WriteLine(response);
+        }
+        
+        public void PushTag(string tag)
+        {
+            Console.WriteLine($"git push origin {tag}");
+            
+            if (_dryRun)
+                return;
+            
+            var response = ExecuteCommand("git", $"push origin {tag}");
             
             if (!string.IsNullOrEmpty(response))
                 Console.WriteLine(response);
