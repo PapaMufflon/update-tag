@@ -71,6 +71,11 @@ namespace Update_Tag
             return ExecuteCommand("git", $"log -1 {tag} --format=\"(%s, %ar)\"");
         }
         
+        public string GetTopCommitInfo()
+        {
+            return ExecuteCommand("git", $"log -1 --format=\"(%s, %ar)\"");
+        }
+        
         private static List<Tag> Parse(string tagsResponse)
         {
             var regex = @"^(?<major>\d*)\.(?<minor>\d*)\.(?<patch>\d*)(-(?<label>[a-zA-Z-]*)(\.(?<version>\d*)))?$";

@@ -8,6 +8,11 @@ namespace Update_Tag
         public void Execute()
         {
             var git = new Git(false);
+            
+            var topCommit = git.GetTopCommitInfo();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"latest {topCommit.Trim()}");
+            
             var allTags = git.GetTags();
             allTags
                 .OrderBy(x => x.Major)
@@ -17,7 +22,18 @@ namespace Update_Tag
                 .GroupBy(x => x.Label)
                 .Select(x => x.Last())
                 .ToList()
-                .ForEach(x => Console.WriteLine($"{x} {git.GetTagInfo(x.ToString()).Trim()}"));
+                .ForEach(x =>
+                {
+                    var tagInfo = git.GetTagInfo(x.ToString());
+
+                    Console.ForegroundColor = tagInfo.Equals(topCommit)
+                        ? ConsoleColor.Green
+                        : ConsoleColor.DarkYellow;
+                    
+                    Console.WriteLine($"{x} {tagInfo.Trim()}");
+                });
+            
+            Console.ResetColor();
         }
     }
 }
