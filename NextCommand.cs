@@ -6,12 +6,30 @@ namespace Update_Tag
     internal class NextCommand : ICommand
     {
         private readonly string _label;
+        private readonly string _revision;
         private readonly Place _place;
         private readonly bool _dryRun;
 
-        public NextCommand(string label, Place place, bool dryRun)
+        public NextCommand(string[] arguments, Place place, bool dryRun)
         {
-            _label = label;
+            if (place == Place.Version)
+            {
+                _label = arguments.FirstOrDefault(x =>
+                    !x.Equals("--dry-run") &&
+                    !x.Equals("-d"));
+                
+                _revision = arguments.FirstOrDefault(x =>
+                    !x.Equals(_label) &&
+                    !x.Equals("--dry-run") &&
+                    !x.Equals("-d"));
+            }
+            else
+            {
+                _revision = arguments.FirstOrDefault(x =>
+                    !x.Equals("--dry-run") &&
+                    !x.Equals("-d"));
+            }
+            
             _place = place;
             _dryRun = dryRun;
         }
@@ -42,7 +60,7 @@ namespace Update_Tag
                 ? GetNewTag()
                 : latestTag.Increment(_place);
 
-            git.NewTag(newTag.ToString());
+            git.NewTag(newTag.ToString(), _revision);
             git.Push();
             git.PushTag(newTag.ToString());
         }

@@ -27,14 +27,14 @@ namespace Update_Tag
             return Parse(tagsResponse);
         }
         
-        public void NewTag(string newTag)
+        public void NewTag(string newTag, string revision)
         {
-            Console.WriteLine($"git tag {newTag}");
+            Console.WriteLine($"git tag {newTag} {revision}");
 
             if (_dryRun)
                 return;
             
-            var response = ExecuteCommand("git", $"tag {newTag}");
+            var response = ExecuteCommand("git", $"tag {newTag} {revision}");
 
             if (!string.IsNullOrEmpty(response))
                 Console.WriteLine(response);
@@ -66,9 +66,9 @@ namespace Update_Tag
                 Console.WriteLine(response);
         }
 
-        public string GetTagInfo(string tag)
+        public string GetTagInfo(string revision)
         {
-            return ExecuteCommand("git", $"log -1 {tag} --format=\"(%s, %ar)\"");
+            return ExecuteCommand("git", $"log -1 {revision} --format=\"(%s, %ar)\"");
         }
         
         public string GetTopCommitInfo()
