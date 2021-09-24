@@ -14,7 +14,7 @@ namespace Update_Tag
             
             try
             {
-                command.Execute();
+                command.Execute(args.Skip(1).ToArray());
             }
             catch (Exception e)
             {
@@ -39,20 +39,22 @@ namespace Update_Tag
             if (dryRun)
                 Console.WriteLine("dry run, commands won't be executed" + Environment.NewLine);
 
+            var git = new Git(dryRun);
+            
             return args[0] switch
             {
-                var x when x == "next" || x == "n" => new NextCommand(args.Skip(1).ToArray(), Place.Version, dryRun),
-                var x when x == "nextPatch" || x == "np" => new NextCommand(args.Skip(1).ToArray(), Place.Patch, dryRun),
-                var x when x == "nextMinor" || x == "nx" => new NextCommand(args.Skip(1).ToArray(), Place.Minor, dryRun),
-                var x when x == "nextMajor" || x == "nX" => new NextCommand(args.Skip(1).ToArray(), Place.Major, dryRun),
-                var x when x == "listLatest" || x == "l" => new ListLatestCommand(),
+                var x when x == "next" || x == "n" => new NextCommand(Place.Version, git),
+                var x when x == "nextPatch" || x == "np" => new NextCommand(Place.Patch, git),
+                var x when x == "nextMinor" || x == "nx" => new NextCommand(Place.Minor, git),
+                var x when x == "nextMajor" || x == "nX" => new NextCommand(Place.Major, git),
+                var x when x == "listLatest" || x == "l" => new ListLatestCommand(git),
                 _ => throw new Exception("Unknown command: " + args[0])
             };
         }
 
         private static void WriteUsage()
         {
-            Console.WriteLine(@"usage: update-tag command [label] [revision] [options]
+            Console.WriteLine(@"usage: update-tag command [label] [revision | -X] [options]
 
 available commands:
 next (n): creates a new tag by incrementing the version number
@@ -62,10 +64,11 @@ nextMajor (nX): creates a new tag by incrementing the major number
 listLatest (l): lists latest tag versions in each category, label and dry-run gets ignored
 
 label: the optional label to increment
-revision: the optional revision (or tag) to add the new tag.
+revision: the optional revision (or tag) to add the new tag to
+--next-major-version (-X): only available for `update-tag n [label]`; creates a new major version for the label
 
 options:
---dry-run (-d): only executes non-mutating  git commands like listing tags, prints the others to console instead
+--dry-run (-d): only executes non-mutating git commands like listing tags, prints the others to console instead
 
 examples:
 update-tag np                creates a new tag incrementing the patch number (0.0.1 if it's the first one)

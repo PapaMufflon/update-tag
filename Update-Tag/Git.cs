@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Update_Tag
 {
-    public class Git
+    internal class Git : IGit
     {
         private readonly bool _dryRun;
 
@@ -68,12 +68,25 @@ namespace Update_Tag
 
         public string GetTagInfo(string revision)
         {
-            return ExecuteCommand("git", $"log -1 {revision} --format=\"(%s, %ar)\"");
+            var behind = GetCommitsBehind(revision);
+
+            var behindText = behind == 0
+                ? "up to date"
+                : $"{behind} behind";
+            
+            return ExecuteCommand("git", $"log -1 {revision} --format=\"%s | %an, %ar and {behindText}\"").Trim();
+        }
+
+        public int GetCommitsBehind(string revision)
+        {
+            var behind = ExecuteCommand("git", $"rev-list {revision}..HEAD --count").Trim();
+
+            return int.Parse(behind);
         }
         
         public string GetTopCommitInfo()
         {
-            return ExecuteCommand("git", $"log -1 --format=\"(%s, %ar)\"");
+            return ExecuteCommand("git", $"log -1 --format=\"%s | %an, %ar\"").Trim();
         }
         
         private static List<Tag> Parse(string tagsResponse)

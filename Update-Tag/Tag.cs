@@ -26,11 +26,15 @@ namespace Update_Tag
                 : $"{Major}.{Minor}.{Patch}-{Label}.{Version}";
         }
 
-        public Tag Increment(Place place)
+        public Tag Increment(Place place, string label, bool newMajorVersion)
         {
-            if (place == Place.Version && string.IsNullOrEmpty(Label))
-                throw new Exception("Cannot increment version with no label");
-
+            if (place == Place.Version &&
+                !string.IsNullOrEmpty(label) &&
+                string.IsNullOrEmpty(Label))
+            {
+                return IncrementWithLabel(label, newMajorVersion);
+            }
+            
             return place switch
             {
                 Place.Major => new Tag(Major + 1, 0, 0, Label, string.IsNullOrEmpty(Label) ? (int?) null : 1),
@@ -39,6 +43,13 @@ namespace Update_Tag
                 Place.Version => new Tag(Major, Minor, Patch, Label, Version + 1),
                 _ => throw new ArgumentOutOfRangeException(nameof(place), place, null)
             };
+        }
+
+        private Tag IncrementWithLabel(string label, bool newMajorVersion)
+        {
+            return newMajorVersion
+                ? new Tag(Major + 1, 0, 0, label, 1)
+                : new Tag(Major, Minor + 1, 0, label, 1);
         }
     }
 }
