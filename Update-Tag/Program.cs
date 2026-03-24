@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace Update_Tag
@@ -24,7 +24,7 @@ namespace Update_Tag
 
         private static ICommand GetCommand(string[] args)
         {
-            if (args.Length == 0 || args.Length > 4 || args[0].Equals("--help"))
+            if (args.Length == 0 || args[0].Equals("--help"))
             {
                 WriteUsage();
                 return null;
@@ -48,6 +48,7 @@ namespace Update_Tag
                 var x when x == "nextMinor" || x == "nx" => new NextCommand(Place.Minor, git),
                 var x when x == "nextMajor" || x == "nX" => new NextCommand(Place.Major, git),
                 var x when x == "listLatest" || x == "l" => new ListLatestCommand(git),
+                var x when x == "delete" || x == "del" => new DeleteCommand(git),
                 _ => throw new Exception("Unknown command: " + args[0])
             };
         }
@@ -62,6 +63,7 @@ nextPatch (np): creates a new tag by incrementing the patch number
 nextMinor (nx): creates a new tag by incrementing the minor number
 nextMajor (nX): creates a new tag by incrementing the major number
 listLatest (l): lists latest tag versions in each category, label and dry-run gets ignored
+delete (del): lists and deletes the last 50 tags reachable from the current branch (interactive selection)
 
 label: the optional label to increment
 revision: the optional revision (or tag) to add the new tag to
@@ -69,6 +71,11 @@ revision: the optional revision (or tag) to add the new tag to
 
 options:
 --dry-run (-d): only executes non-mutating git commands like listing tags, prints the others to console instead
+--local: delete only local tags (remote tags stay)
+--remote: delete only remote tags (local tags stay)
+when neither --local nor --remote is provided, both local and remote tags are deleted
+
+selection: when prompted, enter a comma-separated list like `1,3,7` or a range like `1-7`
 
 examples:
 update-tag np                creates a new tag incrementing the patch number (0.0.1 if it's the first one)
