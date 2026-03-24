@@ -11,5 +11,9 @@ namespace Update_Tag
         string GetTagInfo(string revision);
         int GetCommitsBehind(string revision);
         string GetTopCommitInfo();
+
+        List<string> GetRecentMergedHeadTags(int count);
+        void DeleteLocalTags(IEnumerable<string> tags);
+        void DeleteRemoteTags(IEnumerable<string> tags);
     }
 }

@@ -88,6 +88,59 @@ namespace Update_Tag
         {
             return ExecuteCommand("git", $"log -1 --format=\"%s | %an, %ar\"").Trim();
         }
+
+        public List<string> GetRecentMergedHeadTags(int count)
+        {
+            // Ordering intentionally matches: git tag --sort=-creatordate
+            var tagsResponse = ExecuteCommand("git", "--no-pager tag --sort=-creatordate").Trim();
+            if (string.IsNullOrEmpty(tagsResponse))
+                return new List<string>();
+
+            return tagsResponse
+                .Split(new[] { Environment.NewLine, "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Take(count)
+                .ToList();
+        }
+
+        public void DeleteLocalTags(IEnumerable<string> tags)
+        {
+            var tagList = tags?.ToList() ?? new List<string>();
+            if (tagList.Count == 0)
+                return;
+
+            var joinedTags = string.Join(" ", tagList);
+            var arguments = $"tag -d {joinedTags}";
+
+            Console.WriteLine($"git {arguments}");
+
+            if (_dryRun)
+                return;
+
+            var response = ExecuteCommand("git", arguments);
+            if (!string.IsNullOrEmpty(response))
+                Console.WriteLine(response);
+        }
+
+        public void DeleteRemoteTags(IEnumerable<string> tags)
+        {
+            var tagList = tags?.ToList() ?? new List<string>();
+            if (tagList.Count == 0)
+                return;
+
+            var joinedTags = string.Join(" ", tagList);
+            var arguments = $"push origin --delete {joinedTags}";
+
+            Console.WriteLine($"git {arguments}");
+
+            if (_dryRun)
+                return;
+
+            var response = ExecuteCommand("git", arguments);
+            if (!string.IsNullOrEmpty(response))
+                Console.WriteLine(response);
+        }
         
         private static List<Tag> Parse(string tagsResponse)
         {
