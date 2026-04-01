@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace Update_Tag
@@ -24,7 +24,7 @@ namespace Update_Tag
 
         private static ICommand GetCommand(string[] args)
         {
-            if (args.Length == 0 || args.Length > 4 || args[0].Equals("--help"))
+            if (args.Length == 0 || args[0].Equals("--help"))
             {
                 WriteUsage();
                 return null;
@@ -69,6 +69,7 @@ revision: the optional revision (or tag) to add the new tag to
 
 options:
 --dry-run (-d): only executes non-mutating git commands like listing tags, prints the others to console instead
+--rolling: only available for `update-tag n rc`; after creating/pushing a new rc tag, asks whether to delete the previous rc tag (default: no)
 
 examples:
 update-tag np                creates a new tag incrementing the patch number (0.0.1 if it's the first one)
@@ -76,7 +77,8 @@ update-tag n test            creates a new tag incrementing the version number (
 update-tag nX 9ba4fa1        creates a new tag incrementing the major number for the revision 9ba4fa1
 update-tag nx 0.1.3-TEST.3   creates a new tag incrementing the minor number for the revision where there is also tag 0.1.3-TEST.3
 update-tag np test           creates a new tag incrementing the patch number for the revision with the latest test tag
-update-tag n test rc         creates a new tag incrementing the version number for the revision with the latest rc tag");
+update-tag n test rc         creates a new tag incrementing the version number for the revision with the latest rc tag
+update-tag n rc --rolling    creates a new rc tag and asks whether to delete the previous rc tag");
         }
     }
 }

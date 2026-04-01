@@ -39,6 +39,32 @@ namespace Update_Tag
             if (!string.IsNullOrEmpty(response))
                 Console.WriteLine(response);
         }
+
+        public void DeleteTag(string tag)
+        {
+            Console.WriteLine($"git tag -d {tag}");
+
+            if (_dryRun)
+                return;
+
+            var response = ExecuteCommand("git", $"tag -d {tag}");
+
+            if (!string.IsNullOrEmpty(response))
+                Console.WriteLine(response);
+        }
+
+        public void DeleteRemoteTag(string tag)
+        {
+            Console.WriteLine($"git push origin :refs/tags/{tag}");
+
+            if (_dryRun)
+                return;
+
+            var response = ExecuteCommand("git", $"push origin :refs/tags/{tag}");
+
+            if (!string.IsNullOrEmpty(response))
+                Console.WriteLine(response);
+        }
         
         public void Push()
         {
