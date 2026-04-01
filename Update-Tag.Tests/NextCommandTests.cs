@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Moq;
 using Xunit;
 
@@ -211,6 +212,98 @@ namespace Update_Tag.Tests
             git.Verify(x => x.NewTag("1.1.0-TEST.1", "0.1.0-RC.1"));
             git.Verify(x => x.Push());
             git.Verify(x => x.PushTag("1.1.0-TEST.1"));
+        }
+
+        [Fact]
+        public void Rolling_mode_deletes_previous_label_tag_when_confirmed()
+        {
+            var git = new Mock<IGit>();
+            git.Setup(x => x.GetTags()).Returns(new List<Tag>
+            {
+                new Tag(1, 2, 3, null, null),
+                new Tag(1, 2, 3, "RC", 1)
+            });
+
+            var command = new NextCommand(Place.Version, git.Object);
+            var originalIn = Console.In;
+            try
+            {
+                Console.SetIn(new StringReader("y"));
+                command.Execute(new[] { "rc", "--rolling" });
+            }
+            finally
+            {
+                Console.SetIn(originalIn);
+            }
+
+            git.Verify(x => x.NewTag("1.3.0-RC.1", null));
+            git.Verify(x => x.Push());
+            git.Verify(x => x.PushTag("1.3.0-RC.1"));
+            git.Verify(x => x.DeleteTag("1.2.3-RC.1"));
+            git.Verify(x => x.DeleteRemoteTag("1.2.3-RC.1"));
+        }
+
+        [Fact]
+        public void Rolling_mode_does_not_delete_previous_label_tag_by_default()
+        {
+            var git = new Mock<IGit>();
+            git.Setup(x => x.GetTags()).Returns(new List<Tag>
+            {
+                new Tag(1, 2, 3, null, null),
+                new Tag(1, 2, 3, "RC", 1)
+            });
+
+            var command = new NextCommand(Place.Version, git.Object);
+            var originalIn = Console.In;
+            try
+            {
+                Console.SetIn(new StringReader(Environment.NewLine));
+                command.Execute(new[] { "rc", "--rolling" });
+            }
+            finally
+            {
+                Console.SetIn(originalIn);
+            }
+
+            git.Verify(x => x.NewTag("1.3.0-RC.1", null));
+            git.Verify(x => x.Push());
+            git.Verify(x => x.PushTag("1.3.0-RC.1"));
+            git.Verify(x => x.DeleteTag(It.IsAny<string>()), Times.Never);
+            git.Verify(x => x.DeleteRemoteTag(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public void Rolling_mode_with_dry_run_only_states_that_it_would_ask_for_deletion()
+        {
+            var git = new Mock<IGit>();
+            git.Setup(x => x.GetTags()).Returns(new List<Tag>
+            {
+                new Tag(1, 2, 3, null, null),
+                new Tag(1, 2, 3, "RC", 1)
+            });
+
+            var command = new NextCommand(Place.Version, git.Object);
+            var originalIn = Console.In;
+            var originalOut = Console.Out;
+            var output = new StringWriter();
+            try
+            {
+                Console.SetIn(new StringReader("y"));
+                Console.SetOut(output);
+                command.Execute(new[] { "rc", "--rolling", "--dry-run" });
+            }
+            finally
+            {
+                Console.SetIn(originalIn);
+                Console.SetOut(originalOut);
+            }
+
+            git.Verify(x => x.NewTag("1.3.0-RC.1", null));
+            git.Verify(x => x.Push());
+            git.Verify(x => x.PushTag("1.3.0-RC.1"));
+            git.Verify(x => x.DeleteTag(It.IsAny<string>()), Times.Never);
+            git.Verify(x => x.DeleteRemoteTag(It.IsAny<string>()), Times.Never);
+            Assert.Contains("dry run, would ask to delete previous rolling tag 1.2.3-RC.1", output.ToString());
         }
     }
 }
